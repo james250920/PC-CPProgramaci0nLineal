@@ -3,7 +3,7 @@ import java.util.*;
 
 public class Generador {
     
-    private static final int NUM_DATOS = 5000; // Número de datos por variable (reducido para 20 variables)
+    private static final int NUM_DATOS =100; // Número de datos por variable (reducido para 20 variables)
     private static final int NUM_VARIABLES = 20; // Número total de variables
     
     public static void main(String[] args) {
@@ -100,20 +100,34 @@ public class Generador {
                 writer.write("# " + nombresRestricciones[r] + ": ");
                 StringBuilder restriccion = new StringBuilder();
                 StringBuilder ecuacion = new StringBuilder();
-                
+
                 for (int i = 1; i <= NUM_VARIABLES; i++) {
                     double coef = rand.nextDouble() * 10 + 0.5; // Entre 0.5 y 10.5
                     restriccion.append(String.format("%.2f", coef));
                     if (i < NUM_VARIABLES) restriccion.append(" ");
-                    
+
                     // Para el comentario
                     if (i > 1) ecuacion.append(" + ");
                     ecuacion.append(String.format("%.2f*X%d", coef, i));
                 }
-                
+
+                // Diversidad en operadores
+                String operador;
+                switch (rand.nextInt(3)) { // Seleccionar aleatoriamente el operador
+                    case 0:
+                        operador = "<=";
+                        break;
+                    case 1:
+                        operador = ">=";
+                        break;
+                    default:
+                        operador = "==";
+                        break;
+                }
+
                 restriccion.append(" ").append(String.format("%.2f", limitesRestricciones[r]));
-                ecuacion.append(" <= ").append(String.format("%.2f", limitesRestricciones[r]));
-                
+                ecuacion.append(" ").append(operador).append(" ").append(String.format("%.2f", limitesRestricciones[r]));
+
                 writer.write(ecuacion.toString());
                 writer.newLine();
                 writer.write(restriccion.toString());

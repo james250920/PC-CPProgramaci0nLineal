@@ -25,6 +25,7 @@ public class ComparadorRendimiento20 {
             System.out.println("\n" + "=" .repeat(70));
             System.out.println("3. EJECUTANDO ALGORITMO PARALELO (20 VARIABLES)...");
             long tiempoParalelo = System.currentTimeMillis();
+            // Asegúrate de que la clase Paralela20 esté definida e importada correctamente.
             Paralela20.main(new String[]{});
             tiempoParalelo = System.currentTimeMillis() - tiempoParalelo;
             

@@ -13,7 +13,7 @@ public class Paralela20 {
     
     public static void main(String[] args) {
         long tiempoInicio = System.currentTimeMillis();
-        
+
         try {
             System.out.println("=== OPTIMIZACIÓN PARALELA CON 20 VARIABLES ===");
             System.out.println("Número de núcleos disponibles: " + NUM_THREADS);
@@ -151,18 +151,48 @@ public class Paralela20 {
         System.out.println("Evaluando muestra optimizada con paso X1: " + pasoX1);
         
         // Dividir el trabajo entre hilos
-        int rangosPorHilo = muestraX1 / NUM_THREADS;
-        int restoRangos = muestraX1 % NUM_THREADS;
-        
+        int rangosPorHilo = datosVariables.get(0).size() / NUM_THREADS;
+        int restoRangos = datosVariables.get(0).size() % NUM_THREADS;
+
         int indiceInicio = 0;
+        // Convertir indiceInicio en una variable final para cumplir con las restricciones de las expresiones lambda
+        final int inicio = indiceInicio;
         for (int hilo = 0; hilo < NUM_THREADS; hilo++) {
             int rangosParaEsteHilo = rangosPorHilo + (hilo < restoRangos ? 1 : 0);
-            int indiceFin = indiceInicio + rangosParaEsteHilo;
-            
-            Future<ResultadoParcial> future = executor.submit(
-                new TareaOptimizacion(indiceInicio, indiceFin, pasoX1, hilo));
+            int indiceFin = inicio + rangosParaEsteHilo;
+
+            Future<ResultadoParcial> future = executor.submit(() -> {
+                double mejorZ = Double.NEGATIVE_INFINITY;
+                double[] mejorSolucion = new double[NUM_VARIABLES];
+                long combinacionesEvaluadas = 0;
+                long combinacionesFactibles = 0;
+
+                for (int i = inicio; i < indiceFin; i++) {
+                    double[] solucionActual = new double[NUM_VARIABLES];
+                    solucionActual[0] = datosVariables.get(0).get(i);
+
+                    // Evaluar combinaciones para las demás variables
+                    for (int j = 1; j < NUM_VARIABLES; j++) {
+                        for (double valor : datosVariables.get(j)) {
+                            solucionActual[j] = valor;
+
+                            combinacionesEvaluadas++;
+                            if (esFactible(solucionActual)) {
+                                combinacionesFactibles++;
+                                double z = calcularFuncionObjetivo(solucionActual);
+                                if (z > mejorZ) {
+                                    mejorZ = z;
+                                    mejorSolucion = solucionActual.clone();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return new ResultadoParcial(mejorSolucion, mejorZ, combinacionesEvaluadas, combinacionesFactibles);
+            });
+
             futures.add(future);
-            
             indiceInicio = indiceFin;
         }
         
@@ -224,7 +254,6 @@ public class Paralela20 {
             }
             
             // Búsqueda recursiva en el hilo
-            int[] indices = new int[NUM_VARIABLES];
             double[] solucionActual = new double[NUM_VARIABLES];
             
             for (int i = indiceInicio; i < indiceFin; i++) {

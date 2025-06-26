@@ -11,7 +11,7 @@ public class Serial20 {
     
     public static void main(String[] args) {
         long tiempoInicio = System.currentTimeMillis();
-        
+
         try {
             System.out.println("=== OPTIMIZACIÓN SERIAL CON 20 VARIABLES ===");
             System.out.println("Cargando configuración del problema...");
@@ -45,14 +45,11 @@ public class Serial20 {
             System.out.println("\nIniciando búsqueda de solución óptima...");
             SolucionOptima solucion = buscarSolucionOptima();
             
-            long tiempoFin = System.currentTimeMillis();
-            double tiempoTotal = (tiempoFin - tiempoInicio) / 1000.0;
-            
-            // Mostrar resultados
-            mostrarResultados(solucion, tiempoTotal);
+            long tiempoTotal = System.currentTimeMillis() - tiempoInicio;
+            mostrarResultados(solucion, tiempoTotal / 1000.0);
             
         } catch (IOException e) {
-            System.err.println("Error al procesar archivos: " + e.getMessage());
+            System.err.println("Error al cargar datos o configuración: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -135,27 +132,24 @@ public class Serial20 {
     
     // Buscar solución óptima usando algoritmo serial con muestreo inteligente
     private static SolucionOptima buscarSolucionOptima() {
-        double mejorZ = Double.NEGATIVE_INFINITY;
-        double[] mejorSolucion = new double[NUM_VARIABLES];
-        long combinacionesEvaluadas = 0;
-        long combinacionesFactibles = 0;
-        
-        // Muestreo adaptativo para manejar 20 variables
+        // Optimizar la lógica de búsqueda serial con muestreo más eficiente
+        // Ajustar muestra base y pasos dinámicos para cada variable
+        int muestraBase = 50; // Reducir muestra base para mayor eficiencia
         int[] muestras = new int[NUM_VARIABLES];
         int[] pasos = new int[NUM_VARIABLES];
-        
-        // Calcular muestras para cada variable
-        int muestraBase = 50; // Muestra base por variable
+
+        // Calcular muestras y pasos para cada variable
         for (int i = 0; i < NUM_VARIABLES; i++) {
             muestras[i] = Math.min(datosVariables.get(i).size(), muestraBase);
             pasos[i] = Math.max(1, datosVariables.get(i).size() / muestras[i]);
         }
-        
+
         System.out.println("Estrategia de muestreo optimizada:");
         for (int i = 0; i < NUM_VARIABLES; i++) {
             System.out.println("- X" + (i+1) + ": paso " + pasos[i] + " (evaluando " + muestras[i] + " valores)");
         }
         
+        // Implementar poda más agresiva en la búsqueda recursiva
         // Búsqueda recursiva optimizada
         int[] indices = new int[NUM_VARIABLES];
         double[] solucionActual = new double[NUM_VARIABLES];
@@ -163,7 +157,7 @@ public class Serial20 {
         ResultadoBusqueda resultado = busquedaRecursiva(0, indices, solucionActual, pasos);
         
         return new SolucionOptima(resultado.mejorSolucion, resultado.mejorZ, 
-                                resultado.combinacionesEvaluadas, resultado.combinacionesFactibles);
+                                  resultado.combinacionesEvaluadas, resultado.combinacionesFactibles);
     }
     
     // Búsqueda recursiva para manejar 20 variables de forma eficiente
@@ -172,7 +166,7 @@ public class Serial20 {
             // Evaluamos la solución completa
             ResultadoBusqueda resultado = new ResultadoBusqueda();
             resultado.combinacionesEvaluadas = 1;
-            
+
             if (esFactible(solucionActual)) {
                 resultado.combinacionesFactibles = 1;
                 resultado.mejorZ = calcularFuncionObjetivo(solucionActual);
@@ -180,36 +174,34 @@ public class Serial20 {
             } else {
                 resultado.mejorZ = Double.NEGATIVE_INFINITY;
             }
-            
+
             return resultado;
         }
-        
-        // Recursión para el nivel actual
+
+        // Recursión para el nivel actual con poda
         ResultadoBusqueda mejorResultado = new ResultadoBusqueda();
         mejorResultado.mejorZ = Double.NEGATIVE_INFINITY;
         mejorResultado.mejorSolucion = new double[NUM_VARIABLES];
-        
+
         for (int i = 0; i < datosVariables.get(nivel).size(); i += pasos[nivel]) {
             solucionActual[nivel] = datosVariables.get(nivel).get(i);
-            
+
+            // Poda: si la solución parcial ya no es factible, no continuar
+            if (!esFactibleParcial(solucionActual, nivel)) {
+                continue;
+            }
+
             ResultadoBusqueda resultadoParcial = busquedaRecursiva(nivel + 1, indices, solucionActual, pasos);
-            
+
             mejorResultado.combinacionesEvaluadas += resultadoParcial.combinacionesEvaluadas;
             mejorResultado.combinacionesFactibles += resultadoParcial.combinacionesFactibles;
-            
+
             if (resultadoParcial.mejorZ > mejorResultado.mejorZ) {
                 mejorResultado.mejorZ = resultadoParcial.mejorZ;
                 mejorResultado.mejorSolucion = resultadoParcial.mejorSolucion.clone();
             }
-            
-            // Progreso cada 100,000 combinaciones
-            if (mejorResultado.combinacionesEvaluadas % 100000 == 0) {
-                System.out.println("Progreso: " + mejorResultado.combinacionesEvaluadas + 
-                                 " combinaciones evaluadas, mejor Z: " + 
-                                 String.format("%.2f", mejorResultado.mejorZ));
-            }
         }
-        
+
         return mejorResultado;
     }
     
@@ -224,6 +216,20 @@ public class Serial20 {
         for (int i = 0; i < restricciones.length; i++) {
             double suma = 0;
             for (int j = 0; j < NUM_VARIABLES; j++) {
+                suma += restricciones[i][j] * solucion[j];
+            }
+            if (suma > limitesRestricciones[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // Verificar si una solución parcial es factible
+    private static boolean esFactibleParcial(double[] solucion, int nivel) {
+        for (int i = 0; i < restricciones.length; i++) {
+            double suma = 0;
+            for (int j = 0; j <= nivel; j++) {
                 suma += restricciones[i][j] * solucion[j];
             }
             if (suma > limitesRestricciones[i]) {
