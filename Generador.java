@@ -3,30 +3,32 @@ import java.util.*;
 
 public class Generador {
     
-    private static final int NUM_DATOS = 15000; // Número de datos por variable
+    private static final int NUM_DATOS = 5000; // Número de datos por variable (reducido para 20 variables)
+    private static final int NUM_VARIABLES = 20; // Número total de variables
     
     public static void main(String[] args) {
         Random rand = new Random();
         
-        System.out.println("Generando " + NUM_DATOS + " datos para cada variable...");
+        System.out.println("Generando " + NUM_DATOS + " datos para cada una de las " + NUM_VARIABLES + " variables...");
         
         try {
-            // Generar datos para X1 (Mesas)
-            generarDatosVariable("datos_X1.txt", "X1", NUM_DATOS, rand, 0, 150);
-            
-            // Generar datos para X2 (Sillas)
-            generarDatosVariable("datos_X2.txt", "X2", NUM_DATOS, rand, 0, 120);
-            
-            // Generar datos para X3 (Estantes)
-            generarDatosVariable("datos_X3.txt", "X3", NUM_DATOS, rand, 0, 100);
+            // Generar datos para todas las variables X1 a X20
+            for (int i = 1; i <= NUM_VARIABLES; i++) {
+                String archivo = "datos_X" + i + ".txt";
+                String varName = "X" + i;
+                // Rangos variables para mayor diversidad
+                double min = 0;
+                double max = 50 + (i * 10); // Rangos incrementales
+                generarDatosVariable(archivo, varName, NUM_DATOS, rand, min, max);
+            }
             
             // Generar archivo de configuración del problema
             generarConfiguracionProblema(rand);
             
             System.out.println("Todos los archivos generados exitosamente:");
-            System.out.println("- datos_X1.txt (" + NUM_DATOS + " valores)");
-            System.out.println("- datos_X2.txt (" + NUM_DATOS + " valores)");
-            System.out.println("- datos_X3.txt (" + NUM_DATOS + " valores)");
+            for (int i = 1; i <= NUM_VARIABLES; i++) {
+                System.out.println("- datos_X" + i + ".txt (" + NUM_DATOS + " valores)");
+            }
             System.out.println("- configuracion_problema.txt");
             
         } catch (IOException e) {
@@ -57,53 +59,76 @@ public class Generador {
         System.out.println("Archivo " + fileName + " generado con " + numDatos + " datos.");
     }
     
-    // Generar configuración del problema de programación lineal
+    // Generar configuración del problema de programación lineal con 20 variables
     private static void generarConfiguracionProblema(Random rand) throws IOException {
-        // Valores aleatorios para las restricciones
-        double madera = rand.nextInt(500) + 100;    // entre 100 y 600
-        double metal = rand.nextInt(400) + 100;     // entre 100 y 500
-        double manoObra = rand.nextInt(700) + 100;  // entre 100 y 800
-        double espacio = rand.nextInt(300) + 50;    // entre 50 y 350
+        // Valores aleatorios para las restricciones (más restricciones para 20 variables)
+        int numRestricciones = 8; // Aumentado para manejar 20 variables
+        double[] limitesRestricciones = new double[numRestricciones];
+        
+        for (int i = 0; i < numRestricciones; i++) {
+            limitesRestricciones[i] = rand.nextDouble() * 1000 + 200; // Entre 200 y 1200
+        }
         
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("configuracion_problema.txt"))) {
-            writer.write("# Configuración del Problema de Programación Lineal");
+            writer.write("# Configuración del Problema de Programación Lineal con 20 Variables");
             writer.newLine();
-            writer.write("# Función Objetivo: Maximizar Z = 210*X1 + 240*X2 + 130*X3");
+            writer.write("# Función Objetivo: Maximizar Z = Σ(coef_i * X_i) para i=1 hasta 20");
             writer.newLine();
             writer.newLine();
             
             writer.write("FUNCION_OBJETIVO");
             writer.newLine();
-            writer.write("210.0 240.0 130.0");
+            // Generar coeficientes aleatorios para la función objetivo
+            StringBuilder coeficientes = new StringBuilder();
+            for (int i = 1; i <= NUM_VARIABLES; i++) {
+                double coef = rand.nextDouble() * 400 + 100; // Entre 100 y 500
+                coeficientes.append(String.format("%.1f", coef));
+                if (i < NUM_VARIABLES) coeficientes.append(" ");
+            }
+            writer.write(coeficientes.toString());
             writer.newLine();
             writer.newLine();
             
             writer.write("RESTRICCIONES");
             writer.newLine();
-            writer.write("# Madera: 5*X1 + 2*X2 + 4*X3 <= " + madera);
-            writer.newLine();
-            writer.write("5.0 2.0 4.0 " + madera);
-            writer.newLine();
             
-            writer.write("# Metal: 3*X1 + 5*X2 + 2*X3 <= " + metal);
-            writer.newLine();
-            writer.write("3.0 5.0 2.0 " + metal);
-            writer.newLine();
+            // Generar restricciones aleatorias
+            String[] nombresRestricciones = {"Materiales", "Recursos", "Capacidad", "Tiempo", 
+                                           "Presupuesto", "Espacio", "Personal", "Calidad"};
             
-            writer.write("# Mano de Obra: 6*X1 + 8*X2 + 4*X3 <= " + manoObra);
-            writer.newLine();
-            writer.write("6.0 8.0 4.0 " + manoObra);
-            writer.newLine();
+            for (int r = 0; r < numRestricciones; r++) {
+                writer.write("# " + nombresRestricciones[r] + ": ");
+                StringBuilder restriccion = new StringBuilder();
+                StringBuilder ecuacion = new StringBuilder();
+                
+                for (int i = 1; i <= NUM_VARIABLES; i++) {
+                    double coef = rand.nextDouble() * 10 + 0.5; // Entre 0.5 y 10.5
+                    restriccion.append(String.format("%.2f", coef));
+                    if (i < NUM_VARIABLES) restriccion.append(" ");
+                    
+                    // Para el comentario
+                    if (i > 1) ecuacion.append(" + ");
+                    ecuacion.append(String.format("%.2f*X%d", coef, i));
+                }
+                
+                restriccion.append(" ").append(String.format("%.2f", limitesRestricciones[r]));
+                ecuacion.append(" <= ").append(String.format("%.2f", limitesRestricciones[r]));
+                
+                writer.write(ecuacion.toString());
+                writer.newLine();
+                writer.write(restriccion.toString());
+                writer.newLine();
+            }
             
-            writer.write("# Espacio: 2*X1 + 2*X2 + 1*X3 <= " + espacio);
             writer.newLine();
-            writer.write("2.0 2.0 1.0 " + espacio);
-            writer.newLine();
-            writer.newLine();
-            
             writer.write("NO_NEGATIVIDAD");
             writer.newLine();
-            writer.write("X1 >= 0, X2 >= 0, X3 >= 0");
+            StringBuilder noNeg = new StringBuilder();
+            for (int i = 1; i <= NUM_VARIABLES; i++) {
+                noNeg.append("X").append(i).append(" >= 0");
+                if (i < NUM_VARIABLES) noNeg.append(", ");
+            }
+            writer.write(noNeg.toString());
             writer.newLine();
         }
     }

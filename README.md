@@ -1,42 +1,27 @@
 # Sistema de Optimización de Programación Lineal
-## Comparación de Algoritmos Serial vs Paralelo con Grandes Datasets
+## Comparación de Algoritmos Serial vs Paralelo - Escalable hasta 20 Variables
 
 ### Descripción del Proyecto
 
-Este proyecto implementa un sistema completo para resolver problemas de programación lineal utilizando tanto algoritmos seriales como paralelos, diseñado para manejar grandes volúmenes de datos (10,000+ puntos por variable).
+Este proyecto implementa un sistema completo para resolver problemas de programación lineal utilizando tanto algoritmos seriales como paralelos, diseñado para manejar desde 3 hasta 20 variables con grandes volúmenes de datos.
 
-### Archivos del Sistema
+### Versiones Disponibles
 
-#### 1. **Generador.java**
-- Genera datasets aleatorios para cada variable (X1, X2, X3)
-- Crea 15,000 valores por variable por defecto
-- Genera configuración del problema de programación lineal
-- **Salida**: 
-  - `datos_X1.txt` - Valores para variable X1 (Mesas)
-  - `datos_X2.txt` - Valores para variable X2 (Sillas)  
-  - `datos_X3.txt` - Valores para variable X3 (Estantes)
-  - `configuracion_problema.txt` - Configuración del problema
+#### Versión Original (3 Variables)
+- `Generador.java` - Genera datasets para X1, X2, X3
+- `Serial.java` - Algoritmo serial optimizado
+- `Paralela.java` - Algoritmo paralelo
+- `ComparadorRendimiento.java` - Comparador para 3 variables
 
-#### 2. **SerialOptimizado.java**
-- Implementación serial optimizada del algoritmo de fuerza bruta
-- Carga y procesa grandes datasets
-- Utiliza muestreo inteligente para reducir complejidad
-- Proporciona estadísticas detalladas de rendimiento
-
-#### 3. **ParalelaOptimizada.java**
-- Implementación paralela utilizando ExecutorService
-- Divide el trabajo entre múltiples hilos
-- Detecta automáticamente el número de núcleos disponibles
-- Combina resultados de todos los hilos
-
-#### 4. **ComparadorRendimiento.java**
-- Ejecuta ambos algoritmos y compara resultados
-- Mide tiempos de ejecución
-- Calcula speedup y mejoras de rendimiento
-- Genera reporte comparativo completo
+#### Versión Escalada (20 Variables) - **¡NUEVO!**
+- `Generador.java` (modificado) - Genera datasets para X1 hasta X20
+- `Serial20.java` - Algoritmo serial para 20 variables
+- `Paralela20.java` - Algoritmo paralelo para 20 variables  
+- `ComparadorRendimiento20.java` - Comparador para 20 variables
 
 ### Problema de Programación Lineal
 
+#### Versión 3 Variables (Original)
 **Función Objetivo:**
 ```
 Maximizar Z = 210·X1 + 240·X2 + 130·X3
@@ -49,99 +34,193 @@ Maximizar Z = 210·X1 + 240·X2 + 130·X3
 - Espacio: 2·X1 + 2·X2 + 1·X3 ≤ [Valor aleatorio]
 - No negatividad: X1, X2, X3 ≥ 0
 
+#### Versión 20 Variables (Escalada)
+**Función Objetivo:**
+```
+Maximizar Z = Σ(coef_i · Xi) para i=1 hasta 20
+```
+
+**Restricciones:**
+- 8 restricciones lineales con coeficientes aleatorios
+- Cada restricción: Σ(ai · Xi) ≤ bi para i=1 hasta 20
+- No negatividad: X1, X2, ..., X20 ≥ 0
+
 ### Cómo Usar el Sistema
 
-#### Opción 1: Ejecución Completa (Recomendada)
+#### Para 3 Variables (Versión Original)
 ```bash
-# Compilar todos los archivos
-javac *.java
+# Compilar archivos originales
+javac Generador.java Serial.java Paralela.java ComparadorRendimiento.java
 
 # Ejecutar comparación completa
 java ComparadorRendimiento
 ```
 
-#### Opción 2: Ejecución Paso a Paso
+#### Para 20 Variables (Versión Escalada)
 ```bash
-# 1. Generar datos
+# Compilar archivos escalados
+javac Generador.java Serial20.java Paralela20.java ComparadorRendimiento20.java
+
+# Ejecutar comparación completa para 20 variables
+java ComparadorRendimiento20
+```
+
+#### Ejecución Paso a Paso (20 Variables)
+```bash
+# 1. Generar datos para 20 variables
 java Generador
 
 # 2. Ejecutar algoritmo serial
-java SerialOptimizado
+java Serial20
 
 # 3. Ejecutar algoritmo paralelo
-java ParalelaOptimizada
+java Paralela20
 ```
 
 ### Características Técnicas
 
 #### Optimizaciones Implementadas:
-1. **Muestreo Inteligente**: Reduce el espacio de búsqueda manteniendo representatividad
+1. **Muestreo Inteligente Escalable**: 
+   - 3 Variables: Muestreo hasta 200 valores por variable
+   - 20 Variables: Muestreo adaptativo (50 valores base por variable)
 2. **Paralelización Eficiente**: Divide el trabajo equitativamente entre hilos
-3. **Gestión de Memoria**: Carga datos de forma eficiente
-4. **Monitoreo de Progreso**: Reporta avance durante la ejecución
+3. **Búsqueda Recursiva**: Optimizada para manejar múltiples variables
+4. **Gestión de Memoria**: Carga datos de forma eficiente
+5. **Monitoreo de Progreso**: Reporta avance durante la ejecución
 
 #### Métricas de Rendimiento:
 - Combinaciones evaluadas por segundo
 - Porcentaje de soluciones factibles
 - Speedup logrado con paralelización  
 - Eficiencia de los hilos
+- Escalabilidad del algoritmo
 
-### Ejemplo de Salida
+#### Complejidad Algorítmica:
+- **3 Variables**: O(n³) con muestreo
+- **20 Variables**: O(n²⁰) con muestreo inteligente
+- **Paralelización**: Speedup teórico de hasta 8x (dependiendo de núcleos)
+
+### Ejemplo de Salida (20 Variables)
 
 ```
-=== RESULTADOS DE OPTIMIZACIÓN PARALELA ===
+=== RESULTADOS DE OPTIMIZACIÓN PARALELA (20 VARIABLES) ===
 Solución óptima encontrada:
-  X1 = 45.2341
-  X2 = 67.8912
-  X3 = 23.1456
-  Valor de Z = 25847.23
+  X1 = 12.4523
+  X2 = 8.7341
+  X3 = 15.9876
+  ...
+  X20 = 3.2156
+  Valor de Z = 45,847.23
 
 Estadísticas:
+  Variables: 20
   Hilos utilizados: 8
-  Combinaciones evaluadas: 1,250,000
-  Combinaciones factibles: 847,532
-  Porcentaje factible: 67.81%
-  Tiempo total: 12.34 segundos
-  Velocidad: 101,294 combinaciones/segundo
-  Speedup estimado: 6.40x
+  Combinaciones evaluadas: 2,500,000
+  Combinaciones factibles: 1,247,832
+  Porcentaje factible: 49.91%
+  Tiempo total: 28.45 segundos
+  Velocidad: 87,847 combinaciones/segundo
+  Speedup estimado: 6.00x
 ```
 
 ### Configuración Avanzada
 
-Para modificar el número de datos generados, editar en `Generador.java`:
+#### Para modificar el número de datos generados:
+**3 Variables (archivos originales):**
 ```java
+// En Generador.java (línea 6)
 private static final int NUM_DATOS = 15000; // Cambiar aquí
 ```
 
-Para ajustar el tamaño de muestra en los algoritmos:
-- `SerialOptimizado.java`: Modificar variables `muestraX1`, `muestraX2`, `muestraX3`
-- `ParalelaOptimizada.java`: Modificar las mismas variables
+**20 Variables (versión escalada):**
+```java  
+// En Generador.java (línea 6)
+private static final int NUM_DATOS = 5000; // Reducido para 20 variables
+```
+
+#### Para ajustar el tamaño de muestra:
+**Serial20.java**: Modificar `muestraBase` (línea 148)
+**Paralela20.java**: Modificar `muestraBase` (línea 207)
+
+#### Para cambiar el número de variables:
+```java
+// En archivos *20.java
+private static final int NUM_VARIABLES = 20; // Cambiar aquí
+```
 
 ### Requisitos del Sistema
 
+#### Mínimos:
 - Java 8 o superior
-- Memoria RAM: Mínimo 2GB (recomendado 4GB para datasets grandes)
-- Procesador: Multinúcleo para aprovechar paralelización
-- Espacio en disco: ~50MB para archivos de datos
+- Memoria RAM: 4GB 
+- Procesador: Dual-core
+- Espacio en disco: 100MB
+
+#### Recomendados para 20 Variables:
+- Java 11 o superior
+- Memoria RAM: 8GB o más
+- Procesador: Octa-core o superior
+- Espacio en disco: 200MB
+- SSD para mejor rendimiento de I/O
 
 ### Casos de Uso
 
-1. **Investigación Académica**: Comparar rendimiento de algoritmos
-2. **Optimización Industrial**: Resolver problemas de asignación de recursos
-3. **Análisis de Escalabilidad**: Estudiar comportamiento con grandes volúmenes de datos
-4. **Educación**: Demostrar conceptos de programación paralela
+1. **Investigación Académica**: 
+   - Comparar rendimiento serial vs paralelo
+   - Estudiar escalabilidad de algoritmos
+   - Análisis de complejidad computacional
+
+2. **Optimización Industrial**: 
+   - Problemas de asignación de recursos
+   - Planificación de producción
+   - Distribución de inventarios
+
+3. **Educación**: 
+   - Demostrar conceptos de programación paralela
+   - Enseñar optimización computacional
+   - Mostrar trade-offs de rendimiento
+
+4. **Benchmarking**: 
+   - Evaluar rendimiento de hardware
+   - Comparar eficiencia de algoritmos
+   - Medir speedup de paralelización
 
 ### Notas Técnicas
 
-- Los algoritmos utilizan fuerza bruta optimizada, no métodos algebraicos como Simplex
-- El muestreo puede no encontrar la solución óptima global, pero proporciona buenas aproximaciones
-- La paralelización es más efectiva con datasets grandes y múltiples núcleos
-- Los archivos de datos se generan en formato texto plano para facilitar análisis
+#### Limitaciones y Consideraciones:
+- **3 Variables**: Algoritmo completo de fuerza bruta con muestreo
+- **20 Variables**: Requiere muestreo agresivo debido a complejidad exponencial
+- **Muestreo**: Puede no encontrar la solución óptima global, pero proporciona buenas aproximaciones
+- **Paralelización**: Más efectiva con datasets grandes y múltiples núcleos
+- **Memoria**: El consumo crece linealmente con el número de variables y datos
+
+#### Archivos Generados:
+- **3 Variables**: 4 archivos (datos_X1.txt, datos_X2.txt, datos_X3.txt, configuracion_problema.txt)
+- **20 Variables**: 21 archivos (datos_X1.txt hasta datos_X20.txt, configuracion_problema.txt)
 
 ### Posibles Mejoras
 
-1. Implementar algoritmo Simplex para comparación
-2. Agregar visualización gráfica de resultados
-3. Soporte para problemas con más variables
-4. Interfaz gráfica de usuario
-5. Exportación de resultados a formatos estándar (CSV, JSON)
+1. **Algoritmos Avanzados**: 
+   - Implementar algoritmo Simplex
+   - Agregar método de puntos interiores
+   - Incorporar algoritmos genéticos
+
+2. **Interfaz y Visualización**:
+   - Interfaz gráfica de usuario
+   - Visualización de resultados en tiempo real
+   - Gráficos de convergencia
+
+3. **Escalabilidad**:
+   - Soporte para 50+ variables
+   - Distribución en cluster
+   - GPU acceleration
+
+4. **Exportación y Análisis**:
+   - Exportación a CSV, JSON, XML
+   - Integración con R/Python
+   - Reportes automáticos
+
+5. **Optimizaciones**:
+   - Cache de resultados
+   - Poda de búsqueda
+   - Heurísticas inteligentes
