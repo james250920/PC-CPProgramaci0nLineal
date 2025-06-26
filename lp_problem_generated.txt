@@ -1,7 +1,0 @@
-Maximizar Z = 210X1 + 240X2 + 130X3
-Restricciones:
-Madera: 5X1 + 2X2 + 4X3 <= 480.0
-Metal: 3X1 + 5X2 + 2X3 <= 193.0
-Mano de Obra: 6X1 + 8X2 + 4X3 <= 365.0
-Espacio en Bodega: 2X1 + 2X2 + X3 <= 176.0
-Restricciones de No Negatividad: X1 >= 0, X2 >= 0, X3 >= 0

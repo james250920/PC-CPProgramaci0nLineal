@@ -1,0 +1,18 @@
+# Configuración del Problema de Programación Lineal
+# Función Objetivo: Maximizar Z = 210*X1 + 240*X2 + 130*X3
+
+FUNCION_OBJETIVO
+210.0 240.0 130.0
+
+RESTRICCIONES
+# Madera: 5*X1 + 2*X2 + 4*X3 <= 308.0
+5.0 2.0 4.0 308.0
+# Metal: 3*X1 + 5*X2 + 2*X3 <= 355.0
+3.0 5.0 2.0 355.0
+# Mano de Obra: 6*X1 + 8*X2 + 4*X3 <= 345.0
+6.0 8.0 4.0 345.0
+# Espacio: 2*X1 + 2*X2 + 1*X3 <= 318.0
+2.0 2.0 1.0 318.0
+
+NO_NEGATIVIDAD
+X1 >= 0, X2 >= 0, X3 >= 0
